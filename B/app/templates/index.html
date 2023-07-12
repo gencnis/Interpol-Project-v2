@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Data Filtering</title>
+</head>
+<body>
+    <h1>Data Filtering</h1>
+    <form action="/filter" method="POST">
+        <label for="name">Name:</label>
+        <input type="text" name="name" id="name"><br>
+
+        <label for="lastname">Lastname:</label>
+        <input type="text" name="lastname" id="lastname"><br>
+
+        <label for="nationalities">Nationalities:</label>
+        <select name="nationalities" id="nationalities">
+            <option></option>
+            <option value="AF">Afghanistan</option>
+            <option value="AL">Albania</option>
+            <option value="DZ">Algeria</option>
+            <!-- Add more options for nationalities here -->
+        </select><br>
+
+        <label for="date_of_birth">Date of Birth:</label>
+        <input type="text" name="date_of_birth" id="date_of_birth"><br>
+
+        <label for="image_link">Image Link:</label>
+        <input type="text" name="image_link" id="image_link"><br>
+
+        <input type="submit" value="Filter">
+    </form>
+</body>
+</html>
