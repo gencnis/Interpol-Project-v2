@@ -15,7 +15,7 @@ class Person(db.Model):
     lastname = db.Column(db.String(100))
     nationalities = db.Column(db.String(100))
     date_of_birth = db.Column(db.String(100))
-    image_link = db.Column(db.String(200))
+    image_link = db.Column(db.String(1000))
 
     def __repr__(self):
         return f"Person(id={self.id}, name={self.name}, lastname={self.lastname}, " \

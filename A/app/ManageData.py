@@ -24,7 +24,8 @@ def extractData(url, nationalities, genders):
     (34, 34),
     (35, 35),
     (36, 40),
-    (40, 50),
+    (40, 45),
+    (45, 50),
     (50, 70),
     (70, 90),
     (90, 120)]
@@ -128,18 +129,18 @@ def write_data(data, filename):
     try:
         with open(filename, mode='w', newline='') as file:
             writer = csv.writer(file)
-            
+
             # Write header row
             writer.writerow(data[0].keys())
 
             # Write data rows
             for item in data:
-                writer.writerow(item.values())
+                row_values = [value.values() if isinstance(value, dict) else [value] for value in item.values()]
+                writer.writerow(row_values)
 
         return True
-    
-    except IOError:
 
+    except IOError:
         return False
 
 def main():
@@ -150,9 +151,11 @@ def main():
     data = extractData(base_url, nationalities, genders)
     clean_data = clearData(data)
     print_stats(clean_data, data)
-    produce(clean_data)
     filename = 'data.csv'
     write_data(data, filename)
+    write_data(clean_data, filename="clean_data.csv")
+    produce(clean_data)
+    
 
 
 if __name__ == "__main__":
