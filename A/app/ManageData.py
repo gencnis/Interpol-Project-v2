@@ -5,75 +5,142 @@ import requests
 import json
 from pprint import pprint
 import time
+import string
+import csv
 
 def extractData(url, nationalities, genders):
-
     data = []
+    age_intervals = [
+    (18, 25),
+    (25, 25),
+    (26, 26),
+    (27, 27),
+    (28, 28),
+    (29, 29),
+    (30, 30),
+    (31, 31),
+    (32, 32),
+    (33, 33),
+    (34, 34),
+    (35, 35),
+    (36, 40),
+    (40, 50),
+    (50, 70),
+    (70, 90),
+    (90, 120)]
 
-    for nation in nationalities:
-
-        r = requests.get(url+"&nationality="+nation)
+    for wantedBy in nationalities:
+        r = requests.get(url+"&arrestWarrantCountryId="+wantedBy)
         response_text = r.text
-        data_check = json.loads(response_text)
+        response = json.loads(response_text)
+        notices = response["_embedded"]["notices"]
+        print("Ülkelerden istenen: ", wantedBy, response["total"])
 
-        print(nation, " bölgesi: ", data_check["total"], "veri.")
+        if response["total"] > 160:
+            
+            for gender in genders:
 
-        if data_check["total"] != 0:
+                r = requests.get(url+"&arrestWarrantCountryId="+wantedBy+"&sexId="+gender)
+                response_text = r.text
+                response = json.loads(response_text)
+                notices = response["_embedded"]["notices"]
+                print("Cinsiyetler ", gender, response["total"])
 
-            if data_check["total"] > 160:
 
-                for gender in genders:
+                if response["total"] > 160:
+                     
+                    # for ageMin in range(18, 100):
+                    #     r = requests.get(url+"&arrestWarrantCountryId="+wantedBy+"&sexId="+gender+"&ageMin="+str(ageMin)+"&ageMax="+str(ageMin))
+                    #     response_text = r.text
+                    #     response = json.loads(response_text)
+                    #     notices = response["_embedded"]["notices"]
+                    #     print("Yaş ", ageMin, response["total"])
 
-                    r1 = requests.get(url+"&nationality="+nation+"&sexId="+gender)
-                    response_text1 = r1.text
-                    second_data_check = json.loads(response_text1)
+                    for ageMin, ageMax in age_intervals:
+                        r = requests.get(url+"&arrestWarrantCountryId="+wantedBy+"&sexId="+gender+"&ageMin="+str(ageMin)+"&ageMax="+str(ageMax))
+                        response_text = r.text
+                        response = json.loads(response_text)
+                        notices = response["_embedded"]["notices"]
+                        print("Yaş ", ageMin, "-", ageMax, response["total"])
+                     
+                     
+                        if response["total"] > 160:
+                             
+                            for nation in nationalities:
+                                r = requests.get(url+"&arrestWarrantCountryId="+wantedBy+"&sexId="+gender+"&ageMin="+str(ageMin)+"&ageMax="+str(ageMin)+"&nationality="+nation)
+                                response_text = r.text
+                                response = json.loads(response_text)
+                                notices = response["_embedded"]["notices"]
+                                print("Ükesi ", nation , response["total"])
 
-                    if second_data_check["total"] > 160:
+                                if response["total"] > 160:
 
-                        for wantedBy in nationalities:
-                                
-                            r2 = requests.get(url+"&nationality="+nation+"&sexId="+gender+"&arrestWarrantCountryId="+wantedBy)
-                            response_text2 = r2.text
-                            third_data_check = json.loads(response_text2)
+                                    for letter in string.ascii_uppercase:
+                                        r = requests.get(url+"&arrestWarrantCountryId="+wantedBy+"&sexId="+gender+"&ageMin="+str(ageMin)+"&ageMax="+str(ageMin)+"&nationality="+nation+"&forename="+letter)
+                                        response_text = r.text
+                                        response = json.loads(response_text)
+                                        notices = response["_embedded"]["notices"]
+                                        print("Soyadı ", letter, response["total"])
 
-                            if third_data_check["total"] > 160:
-                                
-                                for ageMin in range(18, 100):
-                                
-                                    r3 = requests.get(url+"&nationality="+nation+"&sexId="+gender+"&ageMin="+str(ageMin)+"&ageMax="+str(ageMin))
-                                    response_text3 = r3.text
-                                    data_dict = json.loads(response_text3)
-                                    print("STATUS: ", r.status_code)
+                                        if response["total"] > 160:
 
-                                    if data_dict["total"] != 0:
-                                        data.append(data_dict)
+                                            for fletter in string.ascii_uppercase:
+                                                    r = requests.get(url+"&arrestWarrantCountryId="+wantedBy+"&sexId="+gender+"&ageMin="+str(ageMin)+"&ageMax="+str(ageMin)+"&nationality="+nation+"&forename="+letter+"&name="+fletter)
+                                                    response_text = r.text
+                                                    response = json.loads(response_text)
+                                                    notices = response["_embedded"]["notices"]
+                                                    print("Adı ", fletter, response["total"])
 
-                            else:
-                                data.append(third_data_check)
-                    else:
-                        data.append(second_data_check)
-            else:
-                data.append(data_check)
+                                                    data.extend(notices)
+                                        data.extend(notices)
+                                data.extend(notices)
+                        data.extend(notices)
+                data.extend(notices)
+        data.extend(notices)
 
     return data
- 
+
 
 def print_stats(clean_data, data):
-
-    total= 0
-    for item in data:
-        total= total+ item["total"] 
-    
+        
     pprint(clean_data)
     print("STATS: ")
     print("_______________________________________")
     print("\n List(data) uzunluğu: ", len(data))
     print("_______________________________________")
-    print("\n Total veri sayısı: ", total)
-    print("_______________________________________")
     print("\n Temiz veri sayısı: ", len(clean_data))
     print("_______________________________________")
 
+def write_data(data, filename):
+    """
+    Writes data to a CSV file row by row.
+
+    Args:
+        data (list): List of dictionaries representing the data.
+        filename (str): Name of the CSV file to create.
+
+    Returns:
+        bool: True if the data was successfully written to the CSV file, False otherwise.
+    """
+    if not data:
+        return False
+
+    try:
+        with open(filename, mode='w', newline='') as file:
+            writer = csv.writer(file)
+            
+            # Write header row
+            writer.writerow(data[0].keys())
+
+            # Write data rows
+            for item in data:
+                writer.writerow(item.values())
+
+        return True
+    
+    except IOError:
+
+        return False
 
 def main():
     base_url = "https://ws-public.interpol.int/notices/v1/red?="
@@ -84,7 +151,9 @@ def main():
     clean_data = clearData(data)
     print_stats(clean_data, data)
     produce(clean_data)
-    
+    filename = 'data.csv'
+    write_data(data, filename)
+
 
 if __name__ == "__main__":
     start_time = time.time()

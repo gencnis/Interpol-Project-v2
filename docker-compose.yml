@@ -11,16 +11,18 @@ services:
       - ./A:/app
     # Other configuration for container A
 
-  # container_b:
-  #     build:
-  #       context: ./B
-  #       dockerfile: Dockerfile
-  #     container_name: my_container_b  # Custom container name
-  #     ports:
-  #       - "5000:5000"
-  #     volumes:
-  #       - ./B:/app
-  #     # Other configuration for container B
+  container_b:
+      build:
+        context: ./B
+        dockerfile: Dockerfile
+      container_name: my_container_b  # Custom container name
+      ports:
+        - "5000:5000"
+      volumes:
+        - ./B:/app
+      depends_on:
+        - rabbitmq     
+        # Other configuration for container B
 
   rabbitmq:
     image: rabbitmq:management
