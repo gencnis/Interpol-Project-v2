@@ -15,13 +15,15 @@ def extract():
     content = BeautifulSoup(html.text, "html.parser")
 
     # Find the select element with the name "nationality" and get all option elements
-    options = content.find("select", {"name": "nationality"}).findAll("option")
-
-    # Iterate over the option elements and extract the values (nationalities)
-    for opt in options:
-        # Check if the option has a 'value' attribute
-        if opt.has_attr('value'):
-            nationality_list.append(opt['value'])
+    select_elements = content.find_all("select", {"name": "nationality"})
+    for select_element in select_elements:
+        options = select_element.find_all("option")
+    
+        # Iterate over the option elements and extract the values (nationalities)
+        for opt in options:
+            # Check if the option has a 'value' attribute
+            if opt.has_attr('value'):
+                nationality_list.append(opt['value'])
 
     return nationality_list
 

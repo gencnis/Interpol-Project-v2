@@ -10,6 +10,8 @@ services:
     volumes:
       - ./A:/app
     # Other configuration for container A
+    networks:
+      - interpol-project_default
 
   container_b:
       build:
@@ -17,12 +19,14 @@ services:
         dockerfile: Dockerfile
       container_name: my_container_b  # Custom container name
       ports:
-        - "5000:5000"
+        - "5001:5000"
       volumes:
         - ./B:/app
       depends_on:
         - rabbitmq     
         # Other configuration for container B
+      networks:
+      - interpol-project_default
 
   rabbitmq:
     image: rabbitmq:management
@@ -31,5 +35,12 @@ services:
       - RABBITMQ_DEFAULT_USER=guest
       - RABBITMQ_DEFAULT_PASS=guest
     ports:
-      - "5672:5672"
+      - "5673:5672"
       - "15672:15672"
+    networks:
+      - interpol-project_default
+
+networks:
+  interpol-project_default:
+    driver: bridge
+

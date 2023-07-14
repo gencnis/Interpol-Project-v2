@@ -9,11 +9,12 @@ def produce(data):
 
     channel = connection.channel()
 
-    channel.queue_declare(queue='letterbox')
+    channel.queue_declare(queue='box')
 
     message = json.dumps(data)
 
-    channel.basic_publish(exchange='', routing_key='letterbox', body=message)
+    # Publish the message to the 'letterbox' queue
+    channel.basic_publish(exchange='', routing_key='box', body=message)
 
     print('sent message')
 

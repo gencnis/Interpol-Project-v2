@@ -1,25 +1,28 @@
 # app.py
+from flask import Flask, render_template, request, url_for
+from flask_sqlalchemy import SQLAlchemy
+import csv
 import json
 import pika
-from flask import Flask, render_template, request
-from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 db = SQLAlchemy(app)
 
 
 class Person(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100))
-    lastname = db.Column(db.String(100))
-    nationalities = db.Column(db.String(100))
+    forename = db.Column(db.String(100))
     date_of_birth = db.Column(db.String(100))
-    image_link = db.Column(db.String(1000))
+    entity_id = db.Column(db.String(100))
+    nationalities = db.Column(db.String(100))
+    name = db.Column(db.String(100))
+    image = db.Column(db.String(1000))
 
     def __repr__(self):
-        return f"Person(id={self.id}, name={self.name}, lastname={self.lastname}, " \
-               f"nationalities={self.nationalities}, date_of_birth={self.date_of_birth}, image_link={self.image_link})"
+        return f"Person(id={self.id}, forename={self.forename}, date_of_birth={self.date_of_birth}, " \
+               f"entity_id={self.entity_id}, nationalities={self.nationalities}, name={self.name}, image={self.image})"
 
 
 @app.route('/')
@@ -31,28 +34,50 @@ def index():
 @app.route('/filter', methods=['POST'])
 def filter_data():
     """Filter the data based on the provided criteria and return the results."""
-    name = request.form.get('name')
-    lastname = request.form.get('lastname')
-    nationalities = request.form.get('nationalities')
+    forename = request.form.get('forename')
     date_of_birth = request.form.get('date_of_birth')
-    image_link = request.form.get('image_link')
+    entity_id = request.form.get('entity_id')
+    nationalities = request.form.get('nationalities')
+    name = request.form.get('name')
+    image = request.form.get('image')
 
     # Filter the data based on the provided criteria
     filtered_data = Person.query
-    if name:
-        filtered_data = filtered_data.filter(Person.name.ilike(f"%{name}%"))
-    if lastname:
-        filtered_data = filtered_data.filter(Person.lastname.ilike(f"%{lastname}%"))
-    if nationalities:
-        filtered_data = filtered_data.filter(Person.nationalities.ilike(f"%{nationalities}%"))
+    if forename:
+        filtered_data = filtered_data.filter(Person.forename.ilike(f"%{forename}%"))
     if date_of_birth:
         filtered_data = filtered_data.filter(Person.date_of_birth.ilike(f"%{date_of_birth}%"))
-    if image_link:
-        filtered_data = filtered_data.filter(Person.image_link.ilike(f"%{image_link}%"))
+    if entity_id:
+        filtered_data = filtered_data.filter(Person.entity_id.ilike(f"%{entity_id}%"))
+    if nationalities:
+        filtered_data = filtered_data.filter(Person.nationalities.ilike(f"%{nationalities}%"))
+    if name:
+        filtered_data = filtered_data.filter(Person.name.ilike(f"%{name}%"))
+    if image:
+        filtered_data = filtered_data.filter(Person.image.ilike(f"%{image}%"))
 
     results = filtered_data.all()
 
     return render_template('results.html', results=results)
+
+
+def read_data(file_path):
+    """Read data from the CSV file and return a list of dictionaries.
+        For the feature and testig purposes."""
+    data = []
+    with open(file_path, 'r') as file:
+        reader = csv.DictReader(file)
+        for row in reader:
+            data.append(row)
+    return data
+
+
+
+def clean_database():
+    """Clean the whole database by deleting all records."""
+    db.session.query(Person).delete()
+    db.session.commit()
+    print("Database cleaned")
 
 
 def consume_data():
@@ -60,37 +85,74 @@ def consume_data():
     connection_parameters = pika.ConnectionParameters("rabbitmq")
     connection = pika.BlockingConnection(connection_parameters)
     channel = connection.channel()
-    channel.queue_declare(queue='letterbox')
+    channel.queue_declare(queue='box')
 
     def callback(ch, method, properties, body):
-        # Decode the message body
-        data = json.loads(body.decode())
-        
-        # Store the data in the database
-        person = Person(
-            name=data['name'],
-            lastname=data['lastname'],
-            nationalities=data['nationalities'],
-            date_of_birth=data['date_of_birth'],
-            image_link=data['image_link']
-        )
-        db.session.add(person)
-        db.session.commit()
+        try:
+            # Decode the message body
+            data = json.loads(body.decode())
+
+            # Check if the required keys are present in the data
+            if 'entity_id' not in data:
+                print("Error: 'entity_id' key not found in the consumed message")
+                return
+
+            # Extract the entity ID from the incoming data
+            entity_id = data['entity_id']
+
+            # Check if the entity ID already exists in the database
+            existing_person = Person.query.filter_by(entity_id=entity_id).first()
+
+            if existing_person:
+                # Delete the existing person record
+                Person.query.filter_by(entity_id=entity_id).delete()
+                db.session.commit()
+                print(f"Old data deleted for entity ID: {entity_id}")
+
+            # Store the data in the database
+            person = Person(
+                forename=data['forename'],
+                date_of_birth=data['date_of_birth'],
+                entity_id=data['entity_id'],
+                nationalities=data['nationalities'],
+                name=data['name'],
+                image=data['image']
+            )
+            db.session.add(person)
+            db.session.commit()
+
+            print(f"Data stored for entity ID: {entity_id}")
+
+        except json.JSONDecodeError as e:
+            print(f"Error decoding JSON message: {str(e)}")
+        except KeyError as e:
+            print(f"Error accessing key in JSON message: {str(e)}")
 
     # Set up the callback function to consume messages from the 'letterbox' queue
-    channel.basic_consume(queue='letterbox', auto_ack=True, on_message_callback=callback)
+    channel.basic_consume(queue='box', auto_ack=True, on_message_callback=callback)
 
     # Start consuming messages from the RabbitMQ queue
     print("Starting consuming")
     channel.start_consuming()
 
 
+
+def main():
+    with app.app_context():
+        
+        # Create the database tables if they don't exist
+        db.create_all()
+        print("---- Database created. ----")
+
+
+        # Consume data from RabbitMQ
+        consume_data()
+        print("---- Data consumed. ----")
+
+        # Run the Flask application in debug mode
+        app.run(debug=True, threaded=True)
+
+        
+
 if __name__ == '__main__':
-    # Create the database tables if they don't exist
-    db.create_all()
-
-    # Consume data from RabbitMQ
-    consume_data()
-
-    # Run the Flask application in debug mode
-    app.run(debug=True)
+    main()
