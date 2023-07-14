@@ -1,3 +1,50 @@
+"""
+CleanData.py
+
+This script defines a function 'clearData' to clean the input data by extracting relevant information. 
+The function takes a list of dictionaries as input, where each dictionary represents a notice with various fields. 
+It returns a dictionary of cleaned data in the desired format.
+
+Example input:
+data = [
+    {
+        'forename': 'RABIE',
+        'date_of_birth': '1986/02/10',
+        'entity_id': '2023/40891',
+        'nationalities': ['DZ'],
+        'name': 'RIFFI',
+        '_links': {
+            'self': {...},
+            'images': {...},
+            'thumbnail': {...}
+        }
+    },
+    ...
+]
+
+Example output:
+cleanData = {
+    1: {
+        "name": "RIFFI",
+        "lastname": "RABIE",
+        "nationalities": ["DZ"],
+        "entity_id": "2023/40891",
+        "date_of_birth": "1986/02/10",
+        "image": {...}  # Assuming there is a dictionary of image links here
+    },
+    ...
+}
+
+Dependencies:
+- pprint: Python module for pretty-printing data structures
+- json: Python module for working with JSON data
+
+The main function 'main' is provided for testing the 'clearData' function with example data.
+
+@Author: Nisanur Genc
+"""
+
+
 from pprint import pprint
 import json
 
@@ -10,47 +57,6 @@ def clearData(data):
 
     Returns:
         dict: Cleaned data in the desired format.
-
-
-         example input: data = [{
-                            'forename': 'RABIE', 
-                            'date_of_birth': 
-                            '1986/02/10', 
-                            'entity_id': '2023/40891', 
-                            'nationalities': ['DZ'], 
-                            'name': 'RIFFI', 
-                            '_links': {
-                                'self': {...}, 
-                                'images': {...}, 
-                                'thumbnail': {...}
-                                }
-                            }, 
-                            '_links': {
-                                'self': {...}, 
-                                'first': {...}, 
-                                'last': {...}
-                                }}
-                            }
-
-    example output: cleanData = {
-                        1 : {
-                            "name": "RIFFI",
-                            "lastname": "RABIE",
-                            "nationalities": ["DZ"],
-                            "entity_id" : "2023/40891"
-                            "date_of_birth": "1986/02/10",
-                            "image": {...}  # Assuming there is a dictionary of image links here
-                        },
-                        "2": {
-                            "name": "RIFFI",
-                            "lastname": "RABIE",
-                            "nationalities": ["DZ"],
-                            "entity_id" : "2023/50891"
-                            "date_of_birth": "1986/02/10",
-                            "image": {...}  # Assuming there is a dictionary of image links here
-                        },
-                        ...
-                    }
     """
 
     cleanData = {}

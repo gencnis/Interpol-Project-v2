@@ -1,3 +1,19 @@
+"""
+ExtractCountries.py
+
+This script extracts the list of nationalities from the Interpol website.
+
+Dependencies:
+- requests: Python library for making HTTP requests
+- BeautifulSoup: Python library for web scraping and HTML parsing
+
+The main function 'extract' sends a GET request to the Interpol website and parses the HTML 
+content using BeautifulSoup. It finds the select element with the name "nationality" and extracts 
+the values (nationalities) from the option elements. The extracted nationalities are returned as a list.
+
+@Author: Nisanur Genc
+"""
+
 import requests
 from bs4 import BeautifulSoup
 

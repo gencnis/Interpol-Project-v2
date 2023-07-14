@@ -1,4 +1,28 @@
-# app.py
+"""
+app.py
+
+This script is a Flask application that implements a web interface for filtering and displaying data from a SQLite database. 
+It also includes functionality for consuming data from RabbitMQ and storing it in the database.
+
+Dependencies:
+- Flask: Python web framework
+- SQLAlchemy: Python SQL toolkit and Object-Relational Mapping (ORM) library
+- csv: Python module for reading CSV files
+- json: Python module for working with JSON data
+- pika: Python library for RabbitMQ integration
+
+The script defines a Flask application with routes for rendering HTML templates, filtering data based on user input, and 
+performing database operations. It uses SQLAlchemy for database operations and integrates with a SQLite database specified in the configuration.
+
+The 'Person' class represents the database table schema using SQLAlchemy ORM. The class includes a __repr__ method for better 
+representation of Person objects.
+
+The script also includes helper functions for reading data from a CSV file, cleaning the database, and consuming data from RabbitMQ.
+
+@Author: Nisanur Genc
+"""
+
+
 from flask import Flask, render_template, request, url_for
 from flask_sqlalchemy import SQLAlchemy
 import csv
