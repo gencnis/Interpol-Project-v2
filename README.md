@@ -12,7 +12,7 @@
 - [License](#license)
 
 ## Introduction<a name="introduction"></a>
-This project involves extracting and analyzing data from Interpol using Docker Compose.
+This project involves extracting and filterin data from Interpol using Docker Compose.
 
 ## Containers<a name="containers"></a>
 
