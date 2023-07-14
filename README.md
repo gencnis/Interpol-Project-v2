@@ -18,12 +18,26 @@ This project involves extracting and analyzing data from Interpol using Docker C
 
 ### Container A<a name="container-a"></a>
 Container A retrieves the red list data published by Interpol. The data is then transferred to the message queue system in Container C.
+Container A includes:
+- Python 3.x
+- BeautifulSoup
+- Requests
+- pika
 
 ### Container B<a name="container-b"></a>
 Container B is a Python-based web server. It listens to the message queue in Container C. The information obtained from the queue is stored in the desired database. These details are displayed on a simple HTML web page provided by the web server. The web page should be updated whenever new information is obtained from the queue. 
+Container B includes:
+- Python 3.x
+- Flask
+- Flask-SQLAlchemy
+- Requests
+- pika
 
 ### Container C<a name="container-c"></a>
 Container C hosts a message queue system called RabbitMQ.
+Container C includes:
+- Python 3.x
+- RabbitMQ
 
 ## Dependencies<a name="dependencies"></a>
 - Docker
