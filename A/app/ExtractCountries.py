@@ -13,36 +13,46 @@ the values (nationalities) from the option elements. The extracted nationalities
 
 @Author: Nisanur Genc
 """
-
 import requests
 from bs4 import BeautifulSoup
 
-def extract():
-    """
-    Extracts the list of nationalities from the Interpol website.
+class InterpolCountriesExtractor:
+    def __init__(self, url):
+        self.url = url
 
-    Returns:
-        list: A list of nationalities extracted from the website.
-    """
-    nationality_list = []
+    def extract_nationalities(self, html_content):
+        nationality_list = []
 
-    # Send a GET request to the Interpol website and parse the HTML content
-    html = requests.get("https://www.interpol.int/How-we-work/Notices/View-Red-Notices")
-    content = BeautifulSoup(html.text, "html.parser")
+        try:
+            content = BeautifulSoup(html_content, "html.parser")
+            select_elements = content.find_all("select", {"name": "nationality"})
+            for select_element in select_elements:
+                options = select_element.find_all("option")
+                for opt in options:
+                    if opt.has_attr('value'):
+                        nationality_list.append(opt['value'])
+        except (AttributeError, TypeError) as e:
+            print("Error while parsing the HTML content:", e)
 
-    # Find the select element with the name "nationality" and get all option elements
-    select_elements = content.find_all("select", {"name": "nationality"})
-    for select_element in select_elements:
-        options = select_element.find_all("option")
-    
-        # Iterate over the option elements and extract the values (nationalities)
-        for opt in options:
-            # Check if the option has a 'value' attribute
-            if opt.has_attr('value'):
-                nationality_list.append(opt['value'])
+        return nationality_list
 
-    return nationality_list
+
+    def get_extracted_nationalities(self):
+        # Send a GET request to the Interpol website and fetch the HTML content
+        response = requests.get("https://www.interpol.int/How-we-work/Notices/View-Red-Notices")
+        if response.status_code == 200:
+            html_content = response.text
+            nationalities = self.extract_nationalities(html_content)
+            return nationalities
+        else:
+            print("Failed to fetch the Interpol website. Status code:", response.status_code)
+            return []
+
+
+    def test_extraction(self):
+        nationalities = self.get_extracted_nationalities()
+        print("Extracted Nationalities:", nationalities)
 
 if __name__ == "__main__":
-    # Extract the list of nationalities
-    nationality_list = extract()
+    interpol_countries_extractor = InterpolCountriesExtractor("https://www.interpol.int/How-we-work/Notices/View-Red-Notices")
+    interpol_countries_extractor.test_extraction()
